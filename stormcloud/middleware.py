@@ -1,3 +1,5 @@
+import time
+
 from django.http import HttpResponse
 
 from rules.models import Rule
@@ -50,6 +52,10 @@ class StormCloudMiddleware(object):
 
         if not rule.action:  # no action configured for this URL
             return None  # act normally / return to Django
+
+        # was a delay requested?
+        if rule.delay_ms:
+            time.sleep(rule.delay_ms / 1000.0)  # convert ms to expected seconds
 
         if rule.action == 'flat':
             return HttpResponse(rule.flat_response)

@@ -17,7 +17,9 @@ class Rule(models.Model):
     path = models.CharField(max_length=256, null=False, blank=True, default='')
     verb = models.CharField(max_length=32, null=False, blank=False, default='GET')
     action = models.CharField(max_length=64, null=False, blank=True, default='', choices=ACTION_CHOICES)
-    delay_ms = models.PositiveIntegerField(null=True, blank=True)
+    delay_ms = models.PositiveIntegerField(null=True, blank=True,
+                                           help_text=u'The response will be delayed by this much time, useful for '
+                                                     u'simulating slow connections or causing timeouts.')
     flat_response = models.TextField(null=True, blank=True)
     master_wsdl_url = models.URLField(null=True, blank=True)
     wsdl_find = models.CharField(max_length=128, null=False, blank=True, default='')
