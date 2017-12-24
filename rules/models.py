@@ -20,10 +20,30 @@ class Rule(models.Model):
     delay_ms = models.PositiveIntegerField(null=True, blank=True,
                                            help_text=u'The response will be delayed by this much time, useful for '
                                                      u'simulating slow connections or causing timeouts.')
-    flat_response = models.TextField(null=True, blank=True)
     master_wsdl_url = models.URLField(null=True, blank=True)
     wsdl_find = models.CharField(max_length=128, null=False, blank=True, default='')
     wsdl_replace = models.CharField(max_length=128, null=False, blank=True, default='')
 
     def __unicode__(self):
         return self.path
+
+    @property
+    def flat_response(self):
+        active_responses = self.responses.filter(active=True)
+        if active_responses.count() > 1:
+            # random
+            pass
+
+        if active_responses.first():  # only one response, return it
+            return active_responses.first().response
+
+        return None  # fall back to an empty response
+
+
+class RuleResponse(models.Model):
+    rule = models.ForeignKey(Rule, related_name='responses')
+    response = models.TextField(null=True, blank=True, default='')
+    active = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return u'Response for %s' % self.rule

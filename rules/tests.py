@@ -6,7 +6,7 @@ import datetime
 from django.test import TestCase
 from django.utils.timezone import now
 
-from rules.models import Rule
+from rules.models import Rule, RuleResponse
 
 
 class StormCloudMiddlewareTests(TestCase):
@@ -19,19 +19,21 @@ class StormCloudMiddlewareTests(TestCase):
 
     def test_request_gets_static_response(self):
         rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
-                                   action='flat', flat_response='unicycle cat')
+                                   action='flat')
+        static = RuleResponse.objects.create(rule=rule, response='unicycle cat', active=True)
 
         response = self.client.get(rule.path)
-        self.assertEqual(response.content, rule.flat_response)
+        self.assertEqual(response.content, static.response)
 
     def test_static_request_with_delay(self):
         rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
-                                   action='flat', flat_response='unicycle cat', delay_ms=200)
+                                   action='flat', delay_ms=200)
+        static = RuleResponse.objects.create(rule=rule, response='unicycle cat', active=True)
 
         start = now()
         response = self.client.get(rule.path)
         end = now()
-        self.assertEqual(response.content, rule.flat_response)
+        self.assertEqual(response.content, static.response)
         self.assertTrue(end - start > datetime.timedelta(seconds=0.2))
 
         # remove the delay and verify it comes back faster
