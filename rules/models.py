@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import random
+
 from django.db import models
 
 from vendors.models import Vendor
@@ -31,8 +33,8 @@ class Rule(models.Model):
     def flat_response(self):
         active_responses = self.responses.filter(active=True)
         if active_responses.count() > 1:
-            # random
-            pass
+            responses = [r.response for r in active_responses]
+            return random.choice(responses)
 
         if active_responses.first():  # only one response, return it
             return active_responses.first().response
