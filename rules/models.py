@@ -31,15 +31,19 @@ class Rule(models.Model):
 
     @property
     def flat_response(self):
+        response = ''  # fall back to an empty response
         active_responses = self.responses.filter(active=True)
         if active_responses.count() > 1:
             responses = [r.response for r in active_responses]
-            return random.choice(responses)
+            response = random.choice(responses)
 
         if active_responses.first():  # only one response, return it
-            return active_responses.first().response
+            response = active_responses.first().response
 
-        return None  # fall back to an empty response
+        for substitute in self.substitutions.filter(active=True):
+            response = response.replace(substitute.find, substitute.replace)
+
+        return response  # fall back to an empty response
 
 
 class RuleResponse(models.Model):
@@ -49,3 +53,13 @@ class RuleResponse(models.Model):
 
     def __unicode__(self):
         return u'Response for %s' % self.rule
+
+
+class RuleSubstitution(models.Model):
+    rule = models.ForeignKey(Rule, related_name='substitutions')
+    find = models.TextField(null=False, blank=False)
+    replace = models.TextField(null=False, blank=True)
+    active = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return u'Replace for rule %s' % self.rule

@@ -6,7 +6,7 @@ import datetime
 from django.test import TestCase
 from django.utils.timezone import now
 
-from rules.models import Rule, RuleResponse
+from rules.models import Rule, RuleResponse, RuleSubstitution
 
 
 class StormCloudMiddlewareTests(TestCase):
@@ -54,3 +54,21 @@ class StormCloudMiddlewareTests(TestCase):
         end = now()
         self.assertEqual(response.content, rule.flat_response)
         self.assertTrue(end - start < datetime.timedelta(seconds=0.2))
+
+    def test_request_static_response_with_substitution(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='flat')
+        static = RuleResponse.objects.create(rule=rule, response='unicycle cat', active=True)
+        substitute = RuleSubstitution.objects.create(rule=rule, find='unicycle', replace='toboggan', active=True)
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.content, u'toboggan cat')
+
+    def test_request_static_response_with_inactive_substitution(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='flat')
+        static = RuleResponse.objects.create(rule=rule, response='unicycle cat', active=True)
+        substitute = RuleSubstitution.objects.create(rule=rule, find='unicycle', replace='toboggan', active=False)
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.content, u'unicycle cat')
