@@ -60,6 +60,9 @@ class StormCloudMiddleware(object):
         if rule.action == 'flat':
             return HttpResponse(rule.flat_response)
 
+        elif rule.action == 'live':
+            return HttpResponse(rule.live_response)
+
         response = HttpResponse('')  # respond with nothing to everything else
         # response = self.get_response(request)
 

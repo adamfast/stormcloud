@@ -72,3 +72,18 @@ class StormCloudMiddlewareTests(TestCase):
 
         response = self.client.get(rule.path)
         self.assertEqual(response.content, u'unicycle cat')
+
+    def test_request_live_response(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='live', live_url='http://media.adamfast.com/stormcloud.txt')
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.content, u'live')
+
+    def test_request_static_response_with_substitution(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='live', live_url='http://media.adamfast.com/stormcloud.txt')
+        substitute = RuleSubstitution.objects.create(rule=rule, find='live', replace='replaced', active=True)
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.content, substitute.replace)

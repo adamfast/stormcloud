@@ -2,14 +2,15 @@
 from __future__ import unicode_literals
 
 import random
+import requests
 
 from django.db import models
 
 from vendors.models import Vendor
 
 ACTION_CHOICES = (
-    ('flat', 'Respond with Flat Response'),
-    ('wsdl_replaced', 'Respond with cached find/replaced WSDL file'),
+    ('flat', 'Respond with Configured Response (chooses randomly from active if multiple available)'),
+    ('live', 'Retrieve live URL')
 )
 
 
@@ -22,12 +23,16 @@ class Rule(models.Model):
     delay_ms = models.PositiveIntegerField(null=True, blank=True,
                                            help_text=u'The response will be delayed by this much time, useful for '
                                                      u'simulating slow connections or causing timeouts.')
-    master_wsdl_url = models.URLField(null=True, blank=True)
-    wsdl_find = models.CharField(max_length=128, null=False, blank=True, default='')
-    wsdl_replace = models.CharField(max_length=128, null=False, blank=True, default='')
+    live_url = models.URLField(null=True, blank=True, help_text=u'Used if a live URL should be retrieved.')
 
     def __unicode__(self):
         return self.path
+
+    def perform_substitutions(self, content):
+        for substitute in self.substitutions.filter(active=True):
+            content = content.replace(substitute.find, substitute.replace)
+
+        return content
 
     @property
     def flat_response(self):
@@ -40,10 +45,22 @@ class Rule(models.Model):
         if active_responses.first():  # only one response, return it
             response = active_responses.first().response
 
-        for substitute in self.substitutions.filter(active=True):
-            response = response.replace(substitute.find, substitute.replace)
+        response = self.perform_substitutions(response)
 
         return response  # fall back to an empty response
+
+    @property
+    def live_response(self):
+        response = ''  # fall back to empty response
+
+        if self.live_url:  # require a URL
+            live_response = requests.get(self.live_url)
+            if live_response.status_code == 200:
+                response = live_response.content
+
+        response = self.perform_substitutions(response)
+
+        return response
 
 
 class RuleResponse(models.Model):
