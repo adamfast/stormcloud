@@ -25,6 +25,21 @@ class StormCloudMiddlewareTests(TestCase):
         response = self.client.get(rule.path)
         self.assertEqual(response.content, static.response)
 
+    def test_request_get_vs_post_separate_static_response(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='flat')
+        static = RuleResponse.objects.create(rule=rule, response='unicycle cat', active=True)
+
+        rule2 = Rule.objects.create(hostname='testserver', path=rule.path, verb='POST',
+                                   action='flat')
+        static2 = RuleResponse.objects.create(rule=rule2, response='motorcycle llama', active=True)
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.content, static.response)
+
+        response = self.client.post(rule.path)  # same path, different verb
+        self.assertEqual(response.content, static2.response)
+
     def test_request_gets_static_random_response(self):
         rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
                                    action='flat')

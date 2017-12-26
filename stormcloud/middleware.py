@@ -12,6 +12,8 @@ class StormCloudMiddleware(object):
         # One-time configuration and initialization.
 
     def vendor_lookup(self, server_name):
+        """Currently goes off of hostname ONLY, but ideally the path could be a component, particularly when the
+        hostname is localhost. However, since it's stored on the vendor as a complete base_url including a hostname..."""
         vendors = Vendor.objects.filter(base_url=server_name)
         if vendors.count() > 1:
             raise Exception("More than one vendor for that hostname")
