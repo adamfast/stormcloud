@@ -39,6 +39,10 @@ class StormCloudMiddleware(object):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
 
+        # bypass for Django admin
+        if request.META['PATH_INFO'].startswith('/admin/'):
+            return self.get_response(request)  # act normally / return to Django
+
         vendor = self.vendor_lookup(request.META['SERVER_NAME'])
         rule = self.rule_lookup(vendor=vendor, path=request.META['PATH_INFO'], verb=request.META['REQUEST_METHOD'])
 
@@ -52,8 +56,8 @@ class StormCloudMiddleware(object):
         # str(request.GET.dict())
         # str(request.POST.dict())
 
-        if not rule.action:  # no action configured for this URL
-            return None  # act normally / return to Django
+        if not rule.action:
+            return self.get_response(request)  # act normally / return to Django
 
         # was a delay requested?
         if rule.delay_ms:
