@@ -49,6 +49,42 @@ class StormCloudMiddlewareTests(TestCase):
         response = self.client.get(rule.path)
         self.assertTrue(response.content in [static.response, static2.response])
 
+    def test_request_gets_301_response(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='301')
+        static = RuleResponse.objects.create(rule=rule, response='http://www.google.com/', active=True)
+
+        response = self.client.get(rule.path)
+        self.assertRedirects(response, static.response, 301, fetch_redirect_response=False)
+
+    def test_request_gets_301_random_response(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='301')
+        static = RuleResponse.objects.create(rule=rule, response='http://www.google1.com', active=True)
+        static2 = RuleResponse.objects.create(rule=rule, response='http://www.google2.com', active=True)
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, 301)
+        self.assertTrue(response.url in [static.response, static2.response])
+
+    def test_request_gets_302_response(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='302')
+        static = RuleResponse.objects.create(rule=rule, response='http://www.google.com/', active=True)
+
+        response = self.client.get(rule.path)
+        self.assertRedirects(response, static.response, fetch_redirect_response=False)
+
+    def test_request_gets_302_random_response(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='302')
+        static = RuleResponse.objects.create(rule=rule, response='http://www.google1.com', active=True)
+        static2 = RuleResponse.objects.create(rule=rule, response='http://www.google2.com', active=True)
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url in [static.response, static2.response])
+
     def test_static_request_with_delay(self):
         rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
                                    action='flat', delay_ms=200)

@@ -1,6 +1,6 @@
 import time
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect
 
 from rules.models import Rule
 from vendors.models import Vendor
@@ -68,6 +68,12 @@ class StormCloudMiddleware(object):
 
         elif rule.action == 'live':
             return HttpResponse(rule.live_response)
+
+        elif rule.action == '301':
+            return HttpResponsePermanentRedirect(rule.flat_response)  # treat the text field as a URL field
+
+        elif rule.action == '302':
+            return HttpResponseRedirect(rule.flat_response)
 
         response = HttpResponse('')  # respond with nothing to everything else
         # response = self.get_response(request)
