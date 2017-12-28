@@ -78,7 +78,7 @@ class StormCloudMiddleware(object):
         else:
             try:
                 int(rule.action)
-            except Exception, e:
+            except ValueError:  # not an integer
                 pass
             else:
                 return HttpResponse('', status=int(rule.action))

@@ -85,6 +85,14 @@ class StormCloudMiddlewareTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.url in [static.response, static2.response])
 
+    def test_request_action_not_defined(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='unknown')
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, u'')
+
     def test_request_gets_500_response(self):
         rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
                                    action='500')
