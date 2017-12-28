@@ -51,12 +51,11 @@ class Rule(models.Model):
 
         return response  # fall back to an empty response
 
-    @property
-    def live_response(self):
+    def live_response(self, data=None):
         response = ''  # fall back to empty response
 
         if self.live_url:  # require a URL
-            live_response = requests.get(self.live_url)
+            live_response = requests.get(self.live_url, params=data)
             if live_response.status_code == 200:
                 response = live_response.content
 
