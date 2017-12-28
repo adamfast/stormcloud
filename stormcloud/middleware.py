@@ -75,6 +75,14 @@ class StormCloudMiddleware(object):
         elif rule.action == '302':
             return HttpResponseRedirect(rule.flat_response)
 
+        else:
+            try:
+                int(rule.action)
+            except Exception, e:
+                pass
+            else:
+                return HttpResponse('', status=int(rule.action))
+
         response = HttpResponse('')  # respond with nothing to everything else
         # response = self.get_response(request)
 

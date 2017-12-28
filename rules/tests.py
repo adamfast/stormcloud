@@ -85,6 +85,55 @@ class StormCloudMiddlewareTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.url in [static.response, static2.response])
 
+    def test_request_gets_500_response(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='500')
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, 500)
+
+    def test_request_gets_various_responses(self):
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
+                                   action='501')
+
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
+        rule.action = 502
+        rule.save()
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
+        rule.action = 503
+        rule.save()
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
+        rule.action = 504
+        rule.save()
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
+        rule.action = 401
+        rule.save()
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
+        rule.action = 402
+        rule.save()
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
+        rule.action = 403
+        rule.save()
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
+        rule.action = 404
+        rule.save()
+        response = self.client.get(rule.path)
+        self.assertEqual(response.status_code, int(rule.action))
+
     def test_static_request_with_delay(self):
         rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='GET',
                                    action='flat', delay_ms=200)

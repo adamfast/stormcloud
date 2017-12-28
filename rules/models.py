@@ -12,6 +12,7 @@ ACTION_CHOICES = (
     ('flat', 'Respond with Configured Response (chooses randomly from active if multiple available)'),
     ('301', 'Respond with a 301 permanent redirect (store URL(s) as Responses to be randomly chosen from)'),
     ('302', 'Respond with a 302 temporary redirect (store URL(s) as Responses to be randomly chosen from)'),
+    ('500', 'Respond with an internal server error'),
     ('live', 'Retrieve live URL')
 )
 
