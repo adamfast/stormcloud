@@ -67,7 +67,8 @@ class StormCloudMiddleware(object):
             return HttpResponse(rule.flat_response)
 
         elif rule.action == 'live':
-            return HttpResponse(rule.live_response(request.GET.copy()))
+            return HttpResponse(rule.live_response(get=request.GET.copy(), post=request.POST.copy(),
+                                                   verb=request.META['REQUEST_METHOD']))
 
         elif rule.action == '301':
             return HttpResponsePermanentRedirect(rule.flat_response)  # treat the text field as a URL field

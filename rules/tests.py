@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import datetime
+import json
 
 from django.test import TestCase
 from django.utils.timezone import now
@@ -195,3 +196,24 @@ class StormCloudMiddlewareTests(TestCase):
 
         response = self.client.get(rule.path)
         self.assertEqual(response.content, substitute.replace)
+
+    def test_post_live_response_requestbin(self):
+        self.skipTest("This one requires manual work, so it's disabled - remove skip if you want to test it this way."
+                      "You'll also need to set up your own requestb.in and enter the URL here, as it's a temporary one"
+                      "that will disappear shortly after I check this in.")
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='POST',
+                                   action='live', live_url='https://requestb.in/wst72dws')
+
+        response = self.client.post(rule.path, {'key1': 'value1'})
+
+        print("Manually verify POST data at %s" % rule.live_url)
+
+    def test_post_live_response_httpbin(self):
+        # mode #2
+        rule = Rule.objects.create(hostname='testserver', path='/stormcloud-test/', verb='POST',
+                                   action='live', live_url='https://httpbin.org/post')
+
+        test_payload = {'key1': 'value1'}
+        response = self.client.post(rule.path, test_payload)
+        response_data = json.loads(response.content)  # response.json() won't work because it doesn't return as application/json
+        self.assertEqual(response_data['form'], test_payload)
