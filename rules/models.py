@@ -55,7 +55,7 @@ class Rule(models.Model):
     def live_response(self, get=None, post=None, verb='GET'):
         response = ''  # fall back to empty response
 
-        if self.live_url and verb == 'get':  # require a URL
+        if self.live_url and verb == 'GET':  # require a URL
             live_response = requests.get(self.live_url, params=get)
             if live_response.status_code == 200:
                 response = live_response.content
